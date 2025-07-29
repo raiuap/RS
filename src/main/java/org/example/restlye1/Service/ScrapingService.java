@@ -1,4 +1,4 @@
-package org.example.restlye1.Domain;
+package org.example.restlye1.Service;
 
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
@@ -8,6 +8,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -30,7 +31,8 @@ public class ScrapingService {
 
     public String analizarCalidad(String url){
         try{
-            Document document = Jsoup.connect(url).userAgent("Mozilla/  5.0").timeout(10*1000).get();
+            String apiUrl = "https://api.scraperapi.com/?api_key=TU_API_KEY&url=" + URLEncoder.encode(url, "UTF-8");
+            Document document = Jsoup.connect(apiUrl).get();
             String domain=extractDominaClass(url);
             String selector= SELECTORES_ESPECIFICOS.getOrDefault(domain ,null);
             if(selector!=null){
