@@ -55,12 +55,15 @@ public class ScrapingService {
                 return "Error en ZaraScraper: " + e.getMessage();
             }
         }
+
+
+
     public String analizarCalidad(String url) {
         try (Playwright playwright = Playwright.create()) {
 
             Browser browser = playwright.chromium().launch(
                     new BrowserType.LaunchOptions()
-                            .setHeadless(false) // puedes cambiar a true si quieres
+                            .setHeadless(false)
             );
 
             BrowserContext context = browser.newContext(
@@ -87,17 +90,39 @@ public class ScrapingService {
             page.mouse().wheel(0, 500 + random.nextInt(500));
             page.waitForTimeout(1500);
 
-            // Intentar extraer la composición por selector
-            String selector = ".product-detail-composition"; // ejemplo, revisar el selector real en Zara
-            String composicion = page.textContent(selector);
 
+            Document document = Jsoup.parse(page.content());
+
+            String domain=extractDominaClass(url);
+            String selector= SELECTORES_ESPECIFICOS.getOrDefault(domain ,null);
+
+            if(selector!=null){
+                Elements composition= document.select(selector);
+                if(!composition.isEmpty()){
+                    String text=composition.text();
+                    if(contieneMaterial(text)) {
+                        System.out.println(text);
+                        return text;
+                    }
+                }
+            }
+            //2.Busqueda por texto en all los elementos
+            Elements all=document.getAllElements();
+            for(Element el: all){
+                String text=el.text().toLowerCase();
+                if(contieneMaterial(text)){
+                    return text;
+                }
+            }
+            //3.Regex sobre el texto completo del documento
+            String allText= document.text();
+            String resultRegex=buscarPorRegex(allText   );
+            if(resultRegex!=null){
+                return resultRegex;
+            }
             browser.close();
 
-            if (composicion != null && !composicion.isEmpty()) {
-                return composicion.trim();
-            } else {
-                return "No se pudo encontrar la composición del producto.";
-            }
+            return "No se pudo encontrar la composición de la prenda.";
 
         } catch (Exception e) {
             return "Error al acceder a la URL: " + e.getMessage();
@@ -128,9 +153,8 @@ public class ScrapingService {
 
 
 
-            String domain=extractDominaClass(url);
+            /*String domain=extractDominaClass(url);
             String selector= SELECTORES_ESPECIFICOS.getOrDefault(domain ,null);
-            System.out.println("hola");
             if(selector!=null){
                 Elements composition=document.select(selector);
                 //1.selectores por dominio
@@ -142,7 +166,6 @@ public class ScrapingService {
                     }
                 }
             }
-            System.out.println("2");
             //2.Busqueda por texto en all los elementos
             Elements all=document.getAllElements();
             for(Element el: all){
@@ -156,7 +179,7 @@ public class ScrapingService {
             String resultRegex=buscarPorRegex(allText   );
             if(resultRegex!=null){
                 return resultRegex;
-            }
+            }*/
 
             return "No se pudo encontrar la composición de la prenda.";
 
