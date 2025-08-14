@@ -83,46 +83,48 @@ public class ScrapingService {
             page.waitForTimeout(2000);
             System.out.println(page.content());
 
-            // Simular scroll humano
-            Random random = new Random();
-            page.mouse().wheel(0, 200 + random.nextInt(500));
-            page.waitForTimeout(1000 + random.nextInt(2000));
-            page.mouse().wheel(0, 500 + random.nextInt(500));
-            page.waitForTimeout(1500);
+            // Navegar a la URL y esperar que cargue algo de contenido
+            page.navigate(url);
+            page.waitForTimeout(2000); // espera mínima para cargar JS dinámico
 
+            //Obtener en html renderizado
+            String fullHtml = page.content();
+            Document document = Jsoup.parse(fullHtml);
 
-            Document document = Jsoup.parse(page.content());
-
-            String domain=extractDominaClass(url);
-            String selector= SELECTORES_ESPECIFICOS.getOrDefault(domain ,null);
-
-            if(selector!=null){
-                Elements composition= document.select(selector);
-                if(!composition.isEmpty()){
-                    String text=composition.text();
-                    if(contieneMaterial(text)) {
-                        System.out.println(text);
+            // 1. Intentar selectores específicos por dominio
+            String domain = extractDominaClass(url);
+            String selector = SELECTORES_ESPECIFICOS.getOrDefault(domain, null);
+            if (selector != null) {
+                Elements elements = document.select(selector);
+                for (Element el : elements) {
+                    String text = el.text().toLowerCase();
+                    if (contieneMaterial(text)) {
+                        browser.close();
                         return text;
                     }
                 }
             }
-            //2.Busqueda por texto en all los elementos
-            Elements all=document.getAllElements();
-            for(Element el: all){
-                String text=el.text().toLowerCase();
-                if(contieneMaterial(text)){
+
+            // 2. buscar en trodo DOM
+            Elements allElements = document.getAllElements();
+            for (Element el : allElements) {
+                String text = el.text().toLowerCase();
+                if (contieneMaterial(text)) {
+                    browser.close();
                     return text;
                 }
             }
-            //3.Regex sobre el texto completo del documento
-            String allText= document.text();
-            String resultRegex=buscarPorRegex(allText   );
-            if(resultRegex!=null){
+
+            // 3.regex
+            String allText = document.text();
+            String resultRegex = buscarPorRegex(allText);
+            browser.close();
+            if (resultRegex != null) {
                 return resultRegex;
             }
-            browser.close();
 
             return "No se pudo encontrar la composición de la prenda.";
+
 
         } catch (Exception e) {
             return "Error al acceder a la URL: " + e.getMessage();
