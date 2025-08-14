@@ -16,7 +16,7 @@ public class ScrapingController {
     }
     @GetMapping("/composicion")
     public ResponseEntity<String> getComposicion(@RequestParam String url) {
-        String resultado = scrapingService.analizarCalidad(url);
+        String resultado =  scrapingService.analizarCalidad(url);
         return ResponseEntity.ok(resultado);
     }
 }

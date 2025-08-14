@@ -35,6 +35,7 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.jsoup:jsoup:1.17.2")
+    implementation("com.microsoft.playwright:playwright:1.45.0")
 }
 
 tasks.withType<Test> {
