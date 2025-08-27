@@ -35,26 +35,6 @@ public class ScrapingService {
             "algodón", "poliéster", "elastano", "composición", "material", "viscosa", "lana", "acrílico", "rayón"
     );
 
-    public String analizarCalidadSs(String url) {
-            try {
-                // Hacemos la petición con Jsoup
-                Connection.Response response = Jsoup.connect(url)
-                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36")
-                        .header("X-Requested-With", "XMLHttpRequest")
-                        .ignoreContentType(true) // Para que acepte JSON como respuesta
-                        .method(Connection.Method.GET)
-                        .execute();
-
-                // Obtenemos el JSON como String
-                String json = response.body();
-                System.out.println(json);
-                return json;
-
-            } catch (Exception e) {
-                System.out.println("Error en ZaraScraper: " + e.getMessage());
-                return "Error en ZaraScraper: " + e.getMessage();
-            }
-        }
 
 
 
@@ -79,9 +59,9 @@ public class ScrapingService {
             page.addInitScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
 
             // Navegar a la URL
-            page.navigate(url);
+           /* page.navigate(url);
             page.waitForTimeout(2000);
-            System.out.println(page.content());
+            System.out.println(page.content());*/
 
             // Navegar a la URL y esperar que cargue algo de contenido
             page.navigate(url);
@@ -106,7 +86,7 @@ public class ScrapingService {
             }
 
             // 2. buscar en trodo DOM
-            Elements allElements = document.getAllElements();
+           Elements allElements = document.getAllElements();
             for (Element el : allElements) {
                 String text = el.text().toLowerCase();
                 if (contieneMaterial(text)) {
@@ -134,70 +114,6 @@ public class ScrapingService {
 
 
 
-
-
-
-
-    public String analizarCalidadA(String url){
-        try{
-            Random random = new Random();
-            int delay=200+ random.nextInt(3000);
-            Thread.sleep(delay);
-            Document document = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115 Safari/537.36")
-                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
-                    .header("Accept-Language", "es-ES,es;q=0.9,en;q=0.8")
-                    .header("X-Requested-With", "XMLHttpRequest")
-                    .referrer("https://www.google.com")
-                    .timeout(10000)  // Tiempo máximo en milisegundos
-                    .get();
-            System.out.println(document.html());
-
-
-
-            /*String domain=extractDominaClass(url);
-            String selector= SELECTORES_ESPECIFICOS.getOrDefault(domain ,null);
-            if(selector!=null){
-                Elements composition=document.select(selector);
-                //1.selectores por dominio
-                if(!composition.isEmpty()){
-                    String text=composition.text();
-                    if(contieneMaterial(text)){
-                        System.out.println(text);
-                        return text;
-                    }
-                }
-            }
-            //2.Busqueda por texto en all los elementos
-            Elements all=document.getAllElements();
-            for(Element el: all){
-                String text=el.text().toLowerCase();
-                if(contieneMaterial(text)){
-                    return text;
-                }
-            }
-            //3.Regex sobre el texto completo del documento
-            String allText= document.text();
-            String resultRegex=buscarPorRegex(allText   );
-            if(resultRegex!=null){
-                return resultRegex;
-            }*/
-
-            return "No se pudo encontrar la composición de la prenda.";
-
-        }catch(IOException e){
-            return "Error al acceder a la URL: " + e.getMessage();
-
-        }catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return "El proceso fue interrumpido";
-        }
-    }
-
-
-
-
-
     public String buscarPorRegex(String texto){
         Pattern patron = Pattern.compile("(\\d+%\\s*(algod[oó]n|poli[eé]ster|elastano|lana|acrilico|viscosa|ray[oó]n))", Pattern.CASE_INSENSITIVE);
         Matcher matcher = patron.matcher(texto);
@@ -215,7 +131,7 @@ public class ScrapingService {
     public String extractDominaClass(String url){
         try{
         String host= new URL(url).getHost().replace("www.","");
-        String dominio= host.split("//.")[0];
+        String dominio= host.split("\\.")[0];
         return dominio;
         } catch (Exception e) {
             throw new RuntimeException(e);
