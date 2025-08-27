@@ -28,7 +28,7 @@ import java.net.URL;
 public class ScrapingService {
 
     public static final Map<String, String> SELECTORES_ESPECIFICOS=Map.of(
-            "zara",".product-detail-composition__item"
+            "zara",".product-detail-composition"
     );
 
     private static final List<String> PALABRAS_CLAVE = List.of(
@@ -86,14 +86,14 @@ public class ScrapingService {
             }
 
             // 2. buscar en trodo DOM
-           Elements allElements = document.getAllElements();
+          /* Elements allElements = document.getAllElements();
             for (Element el : allElements) {
                 String text = el.text().toLowerCase();
                 if (contieneMaterial(text)) {
                     browser.close();
                     return text;
                 }
-            }
+            }*/
 
             // 3.regex
             String allText = document.text();
