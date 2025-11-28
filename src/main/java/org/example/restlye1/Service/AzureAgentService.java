@@ -23,18 +23,38 @@ public class AzureAgentService {
 
     public String analizarComposicion(String composicion) {
         try {
-            String prompt = "Analiza la siguiente composición de prenda y determina su calidad, durabilidad y sostenibilidad: "
-                    + composicion;
+            String prompt = "Analiza la siguiente composición de prenda: " + composicion;
+
+            String systemPrompt = """
+                    Eres AnalistaModa, un experto en moda y sostenibilidad.
+
+                    Debes responder SIEMPRE en formato JSON con la siguiente estructura EXACTA:
+                    {
+                      "sustainabilityVerdict": "Excelente|Buena|Regular|Mala",
+                      "durabilityScore": <número del 1 al 10>,
+                      "durabilityVerdict": "Alta|Media|Baja",
+                      "analysisSummary": "<explicación concisa máximo 50 palabras>",
+                      "materialBreakdown": [
+                        {
+                          "material": "<nombre del material>",
+                          "percentage": <porcentaje>,
+                          "impactNote": "<nota concisa máximo 10 palabras>"
+                        }
+                      ]
+                    }
+
+                    Asegúrate de que la suma de porcentajes sea aproximadamente 100.
+                    """;
 
             Map<String, Object> payload = Map.of(
                     "messages", List.of(
                             Map.of(
                                     "role", "system",
-                                    "content", "Eres AnalistaModa, un experto en moda y sostenibilidad."),
+                                    "content", systemPrompt),
                             Map.of(
                                     "role", "user",
-                                    "content", prompt)));
-
+                                    "content", prompt)),
+                    "response_format", Map.of("type", "json_object"));
             String jsonBody = MAPPER.writeValueAsString(payload);
 
             HttpRequest request = HttpRequest.newBuilder()
