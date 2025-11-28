@@ -10,13 +10,28 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class ScrapingController {
     private final ScrapingService scrapingService;
+    private final AzureAgentService azureAgentService;
 
-    public ScrapingController(ScrapingService scrapingService) {
+    public ScrapingController(ScrapingService scrapingService, AzureAgentService azureAgentService) {
         this.scrapingService = scrapingService;
+        this.azureAgentService = azureAgentService;
     }
+
     @GetMapping("/composicion")
-    public ResponseEntity<String> getComposicion(@RequestParam String url) {
-        String resultado =  scrapingService.analizarCalidad(url);
-        return ResponseEntity.ok(resultado);
+    public ResponseEntity<String> getComposicion(@RequestParam String url,
+            @RequestParam(required = false) String mockComposition) {
+        String composicion;
+        if (mockComposition != null && !mockComposition.isEmpty()) {
+            composicion = mockComposition;
+        } else {
+            composicion = scrapingService.analizarCalidad(url);
+        }
+
+        if (composicion.startsWith("Error") || composicion.startsWith("No se pudo")) {
+            return ResponseEntity.ok("No se pudo obtener la composición: " + composicion);
+        }
+
+        String analisis = azureAgentService.analizarComposicion(composicion);
+        return ResponseEntity.ok(analisis);
     }
 }

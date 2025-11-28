@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+# Archivos de configuración local que contienen secretos
+application-local.properties
+
