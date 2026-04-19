@@ -1,7 +1,9 @@
-package org.example.restlye1.Service;
+package org.example.restlye1.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -10,12 +12,13 @@ import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class AzureAgentService {
 
-    @org.springframework.beans.factory.annotation.Value("${azure.ai.api.key}")
+    @Value("${azure.ai.api.key}")
     private String API_KEY;
-    // Probando endpoint estándar de Azure OpenAI con el despliegue indicado
+    
     private static final String ENDPOINT = "https://datahack4good-alberto-r-resource.services.ai.azure.com/openai/deployments/gpt-5-chat/chat/completions?api-version=2024-06-01";
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
@@ -69,10 +72,12 @@ public class AzureAgentService {
             if (response.statusCode() == 200 || response.statusCode() == 201) {
                 return parseResponse(response.body());
             } else {
+                log.error("Error Azure Agent ({}): {}", response.statusCode(), response.body());
                 return "Error Azure Agent (" + response.statusCode() + "): " + response.body();
             }
 
         } catch (Exception e) {
+            log.error("Error al conectar con Azure Agent: {}", e.getMessage());
             return "Error al conectar con Azure Agent: " + e.getMessage();
         }
     }
